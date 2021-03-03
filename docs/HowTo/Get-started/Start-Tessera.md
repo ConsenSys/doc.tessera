@@ -51,7 +51,7 @@ Create a file called `tessera.conf` and add the following properties.
            {
                "app":"Q2T",
                "enabled": true,
-               "serverAddress": "unix:/tmp/test.ipc",
+               "serverAddress": "http://localhost:22222",
                "communicationType" : "REST"
            },
            {
@@ -113,3 +113,88 @@ Use the `upcheck` method to confirm Tessera is up and running.
     ```bash
     I'm up!
     ```
+
+### 5. Send a payload
+
+With one node running, send a payload to yourself where the `from` and `to` values are the
+[generated public key](#1-generate-keys) (`myKey.pub`).
+
+=== "Request"
+
+    ```bash
+    curl -X POST \
+      http://localhost:22222/send \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "payload": "SGVsbG8sIFdvcmxkIQ==",
+        "from": "<TesseraPublicKey>",
+        "to": ["<TesseraPublicKey>"],
+        "privacyFlag": 0,
+        "affectedContractTransactions": [],
+        "execHash": ""
+      }'
+    ```
+
+=== "Example"
+
+    ```bash
+    curl -X POST \
+      http://localhost:22222/send \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "payload": "SGVsbG8sIFdvcmxkIQ==",
+        "from": "UPLeS7ZHZm02feA3qPTXcRBziB1APYCsjZmHGlV6EkQ=",
+        "to": ["UPLeS7ZHZm02feA3qPTXcRBziB1APYCsjZmHGlV6EkQ="],
+        "privacyFlag": 0,
+        "affectedContractTransactions": [],
+        "execHash": ""
+      }'
+    ```
+
+=== "Result"
+
+    ```bash
+    {"key": "5jZPbwuxncr7qrL9esCTnz3PByLlD50kdZy5JkW/JMKcFeTl7I3NeLIsje4C410EYb93HabhddoAVGpwgYF1LQ=="}
+    ```
+
+### 6. Receive a payload
+
+Use the key received when [sending the payload](#5-send-a-payload) and recipient key (`myKey.pub`)
+to receive the payload.
+
+=== "Request"
+
+    ```bash
+    curl -X GET \
+      http://localhost:22222/receive \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "key": "<PayloadKeyFromSend>",
+        "to": "<TesseraPublicKey>"
+      }'
+    ```
+
+=== "Example"
+
+    ```bash
+    curl -X GET \
+      http://localhost:22222/receive \
+        -H 'Content-Type: application/json' \
+        -d '{
+          "key": "5jZPbwuxncr7qrL9esCTnz3PByLlD50kdZy5JkW/JMKcFeTl7I3NeLIsje4C410EYb93HabhddoAVGpwgYF1LQ==",
+          "to": "UPLeS7ZHZm02feA3qPTXcRBziB1APYCsjZmHGlV6EkQ="
+        }'
+    ```
+
+=== "Result"
+
+    ```bash
+    {
+      "payload": "SGVsbG8sIFdvcmxkIQ==",
+      "affectedContractTransactions": [],
+      "execHash": "",
+      "privacyFlag": 0
+    }
+    ```
+
+Where `SGVsbG8sIFdvcmxkIQ==` is `Hello, World!` in Base64.
